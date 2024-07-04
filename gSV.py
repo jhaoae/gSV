@@ -75,8 +75,7 @@ if __name__ == '__main__':
 
     currentDateAndTime = datetime.now()
     print("The current date and time is", currentDateAndTime) 
-    print(chromosome) 
-    ''' 
+     
     #Encoding
     process_pool = multiprocessing.Pool(processes=options.thread_num)
     pool_rets = []
@@ -95,12 +94,11 @@ if __name__ == '__main__':
         pool_rets.append([process_pool.apply_async(graph_cut,(chrom, out_path, options.combine_distance, options.beta, options.gamma, options.amplify)),chrom]) 
     process_pool.close()
     process_pool.join()
-    ''' 
+     
     
     #Detection
     process_pool = multiprocessing.Pool(processes=options.thread_num)
     pool_rets = []
-    detect('20', bam_path, ref_path, out_path, options.complex_mode, options.pos_range, options.L, options.support_signal, options.cluster_similarity, options.mempath, options.memlen, options.min_SV_len)
     
     for chrom in chromosome:
         pool_rets.append([process_pool.apply_async(detect, (chrom, bam_path, ref_path, out_path, options.complex_mode, options.pos_range, options.L, options.support_signal, options.cluster_similarity, options.mempath, options.memlen, options.min_SV_len)), chrom])
