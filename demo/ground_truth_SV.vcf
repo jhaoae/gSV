@@ -1,0 +1,15 @@
+##fileformat=VCFv4.2
+##source=bit_representation_model
+##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the structural variant described in this record">
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
+##INFO=<ID=SVLEN,Number=.,Type=Integer,Description="Difference in length between REF and ALT alleles">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##contig=<ID=20,length=63025520>
+##fileDate=07052024
+##source=bit_representation_model
+##INFO=<ID=END,Number=1,Type=Integer,Description="End point of SV">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample_ids_here
+20	20380753	SV1	G	<DUP>	.	PASS	END=20381170;SVTYPE=tandemDUP;SVLEN=417	GT	0/1
+20	20380754	SV2	G	<INV>	.	PASS	END=20381377;SVTYPE=INV;SVLEN=623	GT	0/1
+20	20966818	SV3	G	<DUP>	.	PASS	END=20967534;SVTYPE=tandemDUP;SVLEN=716	GT	0/1
+20	20966819	SV4	C	<INV>	.	PASS	END=20969261;SVTYPE=INV;SVLEN=2442	GT	0/1
