@@ -27,8 +27,8 @@ conda activate gSV
 
 ### Install copMEM
 ```Linux
-git clone https://github.com/wbieniec/copmem.git
-cd copmem
+git clone https://github.com/wbieniec/copmem2.git
+cd copmem2
 make all
 ```
 
