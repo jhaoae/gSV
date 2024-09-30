@@ -462,8 +462,8 @@ def summarize(ref_path, out_path, min_SV_len):
             seq.write('>'+SV[0]+'_'+SV[1]+'\n'+SV[4]+'\n')
             seq.close()
 
-            ref_start = int(SV[1])-max(2000,SV_len)
-            ref_end = int(SV[1])+max(2000,SV_len)
+            ref_start = max(int(SV[1])-max(2000,SV_len),0)
+            ref_end = min(int(SV[1])+max(2000,SV_len),ref_file.get_reference_length(SV[0]))
             ref = open(vcf_path+SV[0]+'_'+SV[1]+'_ref.fa','a')
             ref_seq = ref_file.fetch(SV[0], ref_start, ref_end)
             ref.write('>'+SV[0]+'_'+SV[1]+'_ref\n'+ref_seq+'\n')
