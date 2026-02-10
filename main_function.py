@@ -6,7 +6,8 @@ from cluster import clustering, bam2fa, assembly, bam2fa_withoutcluster
 from detection import exactmatch, split_fa
 from graph_cut_detection import graph_cut_detection
 import numpy as np
-import os, time
+import os, time, shutil, glob
+from cyvcf2 import VCF, Writer
 from datetime import datetime
 from multiprocessing import Pool
 from functools import partial 
@@ -402,23 +403,62 @@ def detect(chrom, bam_path, ref_path, out_path, complex_mode, pos_range, L, supp
     print('Detection %s runs %0.2f seconds.' % (chrom, (end_time - start_time)))
 
 
+def concat_and_sort_vcf(vcf_files, out_vcf):
+
+    reader0 = VCF(vcf_files[0])
+    writer = Writer(out_vcf, reader0)
+
+    records = []
+
+    for vcf in vcf_files:
+        for rec in VCF(vcf):
+            records.append(rec)
+
+    records.sort(key=lambda r: (r.CHROM, r.POS))
+
+    for rec in records:
+        writer.write_record(rec)
+
+    writer.close()
+
+
+
 def summarize(ref_path, out_path, min_SV_len):
     
     ref_file = pysam.FastaFile(ref_path)
 
-    os.system('mkdir '+ out_path+'/workspace')
-    os.system('mv '+out_path+'/* '+out_path+'/workspace')
+    workspace = os.path.join(out_path, "workspace")
+    os.makedirs(workspace, exist_ok=True)
+
+    for f in os.listdir(out_path):
+        if f == "workspace":
+            continue
+        shutil.move(os.path.join(out_path, f), workspace)
+
     vcf_path = out_path+'/results_vcf/'
         
     if not os.path.exists(vcf_path):
         os.makedirs(vcf_path)
         
-    os.system('cp ' + out_path+'/workspace/*/*.vcf ' + vcf_path)
-    os.system('vcf-concat '+ vcf_path +'*complex_SV.vcf > '+ vcf_path+'complex.vcf')
-    os.system('vcf-sort -c '+ vcf_path +'complex.vcf > '+ out_path+'/gSV_complexSV.vcf')
-    os.system('vcf-concat '+ vcf_path +'*region.vcf > '+ vcf_path+'sum.vcf')
-    os.system('vcf-sort -c '+ vcf_path +'sum.vcf > '+ vcf_path+'sum.sort.vcf')
- 
+    for f in glob.glob(out_path + "/workspace/*/*.vcf"):
+        shutil.copy(f, vcf_path)
+    
+
+    complex_vcfs = glob.glob(os.path.join(vcf_path, "*complex_SV.vcf"))
+    region_vcfs  = glob.glob(os.path.join(vcf_path, "*region.vcf"))
+    
+    # complex SV
+    concat_and_sort_vcf(
+        complex_vcfs,
+        os.path.join(out_path, "gSV_complexSV.vcf")
+    )
+
+    # region SV
+    concat_and_sort_vcf(
+        region_vcfs,
+        os.path.join(vcf_path, "sum.sort.vcf")
+    )
+
     with open(vcf_path+"sum.sort.vcf", "r") as vcf_ori:
         lines = vcf_ori.readlines()
 

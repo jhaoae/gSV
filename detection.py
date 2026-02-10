@@ -1,7 +1,6 @@
 import pysam
 import numpy as np
 import os
-import vcf
 
 def txt2list(file):
     lines = file.split('\n')
@@ -413,7 +412,7 @@ def exactmatch(path, ref, chrom, mempath, memlen, min_SV_len):
                 subtype = item[0]+':'+str(item[2])+'-'+str(item[3])+'-'+str(item[4])
             subtype_list.append(subtype)
 
-        subtype = ';'.join(subtype_list)
+        subtype = '+'.join(subtype_list)
         body_vec = [SV_complex_final[i][1], str(SV_complex_final[i][2]), "SV" + str(ID),SV_complex_final[i][5], SV_complex_final[i][6],".", "PASS", "END=" +str(SV_complex_final[i][3])+ ";SVTYPE="+SV_complex_final[i][0]+":"+subtype+";SVLEN="+str(SV_complex_final[i][4]), "GT", SV_complex_final[i][7]]
         vcf_com.write("\t".join(body_vec) + "\n")
         ID += 1
