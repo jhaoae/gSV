@@ -40,8 +40,10 @@ dependencies:
   - zlib=1.2.13=h5eee18b_1
   - pip:
       - cython==3.0.10
+      - cyvcf2==0.31.4
       - gco-wrapper==3.0.9
       - numpy==2.0.0
       - pysam==0.22.1
+      - python-levenshtein==0.27.3
       - scipy==1.14.0
-prefix: /home/jhaoae/.conda/envs/gSV
+
