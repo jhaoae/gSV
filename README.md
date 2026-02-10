@@ -52,10 +52,9 @@ The demo data is  `./demo/DUP_INV.demo.bam`, extracted from the simulated comple
 
 Assume that the absolute path is `/home/gSV`, and copMEM2 is also installed in this directory.
 
-Download reference genome [hs37d5](https://ftp-trace.ncbi.nih.gov/1000genomes/ftp/technical/reference/phase2_reference_assembly_sequence/)
 ```
 ## Run gSV
-python3 gSV.py -r /home/gSV/demo/hs37d5.fa -b /home/gSV/demo/DUP_INV.demo.bam -o /home/gSV/DUP_INV --mempath /home/gSV/copMEM2 --Complex True
+python3 gSV.py -r /home/gSV/demo/hs37d5_20.fa -b /home/gSV/demo/DUP_INV.demo.bam -o /home/gSV/DUP_INV --mempath /home/gSV/copMEM2 --Complex True
 ```
 
 
