@@ -283,7 +283,7 @@ def exactmatch(path, ref, chrom, mempath, memlen, min_SV_len):
             ref_seq = ref.fetch(chro, ref_start, ref_end)
             ref_copmem.write('>'+chro+'\n'+ref_seq+'\n')
             ref_copmem.close()
-            os.system(mempath+'/copmem2 -o '+ path + c.split('/')[-1][:-3] + '_bnew.txt -b -q -l '+ str(memlen)+' '+ path + SV_start+'_'+str(ref_start)+'_ref.fa ' + path + c)
+            os.system(mempath+'/copmem2 -o '+ path + c.split('/')[-1][:-3] + '_bnew.txt -b -q -l '+ str(memlen)+' '+ path + SV_start+'_'+str(ref_start)+'_ref.fa ' + path + c + ' > /dev/null 2>&1')
             
             with open(path+c.split('/')[-1][:-3]+'_bnew.txt','r') as file:
                 file_content = file.read()
