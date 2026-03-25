@@ -219,13 +219,13 @@ def assembly(path,depth_mean):
                 os.system('wtdbg2  -k 2 -p 19 -X '+depth+' -t 8  -i ' + path + c + ' -fo' + output_prefix + '.wtdbg -q')
 
             os.system('wtpoa-cns -t 8 -i ' + output_prefix + '.wtdbg.ctg.lay.gz -fo ' + output_prefix + '.fa -q')
-            os.system('rm ' + path + c.split('/')[-1][:-6] + '.wtdbg* ')
+            os.system('rm ' + output_prefix + '.wtdbg* ')
 
             if os.path.getsize(path + c.split('/')[-1][:-6] + '.fa')==0:
                 if int(name[2])-int(name[1]) >= 100:
                     os.system('wtdbg2  -k 2 -p 19 -X '+depth+' -R -s -t 8  -i ' + path + c + ' -fo' + output_prefix + '.sup.wtdbg -q')
                     os.system('wtpoa-cns -t 8 -i ' + output_prefix + '.sup.wtdbg.ctg.lay.gz -fo ' + output_prefix + '.fa -q')
-                    os.system('rm ' + path + c.split('/')[-1][:-6] + '.sup.wtdbg* ')
+                    os.system('rm ' + output_prefix + '.sup.wtdbg* ')
  
     os.system('rm ' + path + '*.fastq')
     os.system('find ' + path + ' -name "*" -type f -size 0c | xargs -n 1 rm -rf')
