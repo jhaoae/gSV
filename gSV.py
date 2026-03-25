@@ -10,7 +10,7 @@ from main_function import p_encode, graph_cut, detect, summarize
 
 def parse_arguments(arguments = sys.argv[1:]):
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
-                                    description="""GenSV {0} \n \nShort Usage: GenSV [parameters] -o <output path> -b <input bam path> -r <reference>""")
+                                    description="""gSV {0} \n \nShort Usage: gSV [parameters] -o <output path> -b <input bam path> -r <reference>""")
 
     required_params = parser.add_argument_group("Input/Output parameters")
     required_params.add_argument('-r', dest="ref_path",type = os.path.abspath, required=True, help='Path to reference')

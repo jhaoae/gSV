@@ -207,26 +207,26 @@ def assembly(path,depth_mean):
     for c in file_list:
         if c.endswith('fastq'):
             name = c.split('/')[-1][:-6].split('-')
-            print(name)
+            output_prefix =  path + c.split('/')[-1][:-6]
             if 'genotype' in c:
                 depth = str(int(depth_mean/2))
             else:
                 depth = str(int(depth_mean))
- 
-            print(depth)
+                
             if int(name[2])-int(name[1]) < 100:
-                os.system('wtdbg2  -k 22 -p 1  -X '+depth+' -L 1000 -t 16 -i ' + path + c + ' -fo' + path + c.split('/')[-1][:-6] + '.wtdbg')
+                os.system('wtdbg2  -k 22 -p 1  -X '+depth+' -L 1000 -t 8 -i ' + path + c + ' -fo' + output_prefix + '.wtdbg -q')
             else:
-                os.system('wtdbg2  -k 2 -p 19 -X '+depth+' -t 16  -i ' + path + c + ' -fo' + path + c.split('/')[-1][:-6] + '.wtdbg')
+                os.system('wtdbg2  -k 2 -p 19 -X '+depth+' -t 8  -i ' + path + c + ' -fo' + output_prefix + '.wtdbg -q')
 
-            os.system('wtpoa-cns -t 16 -i ' + path + c.split('/')[-1][:-6] + '.wtdbg.ctg.lay.gz -fo ' + path + c.split('/')[-1][:-6] + '.fa')
+            os.system('wtpoa-cns -t 8 -i ' + output_prefix + '.wtdbg.ctg.lay.gz -fo ' + output_prefix + '.fa -q')
             os.system('rm ' + path + c.split('/')[-1][:-6] + '.wtdbg* ')
 
             if os.path.getsize(path + c.split('/')[-1][:-6] + '.fa')==0:
                 if int(name[2])-int(name[1]) >= 100:
-                    os.system('wtdbg2  -k 2 -p 19 -X '+depth+' -R -s -t 16  -i ' + path + c + ' -fo' + path + c.split('/')[-1][:-6] + '.sup.wtdbg')
-                    os.system('wtpoa-cns -t 16 -i ' + path + c.split('/')[-1][:-6] + '.sup.wtdbg.ctg.lay.gz -fo ' + path + c.split('/')[-1][:-6] + '.fa')
+                    os.system('wtdbg2  -k 2 -p 19 -X '+depth+' -R -s -t 8  -i ' + path + c + ' -fo' + output_prefix + '.sup.wtdbg -q')
+                    os.system('wtpoa-cns -t 8 -i ' + output_prefix + '.sup.wtdbg.ctg.lay.gz -fo ' + output_prefix + '.fa -q')
                     os.system('rm ' + path + c.split('/')[-1][:-6] + '.sup.wtdbg* ')
+ 
     os.system('rm ' + path + '*.fastq')
     os.system('find ' + path + ' -name "*" -type f -size 0c | xargs -n 1 rm -rf')
 

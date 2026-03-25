@@ -30,7 +30,6 @@ def p_encode(chrom,bam_path,ref_path,out_path,min_mapq,min_len):
     sub_num = 200000
     depth_mean, loss_re, support_sum = read_encoding(bam_file, rf_array, out_path, chrom, min_mapq, min_len, sub_num)
     
-    print(chrom,depth_mean,loss_re)
     
     if np.isnan(depth_mean):
         print('no reads in '+chrom)
@@ -49,7 +48,6 @@ def graph_cut(chrom,out_path,distance,beta,gamma,amplify):
     data = np.load(out_path+'/'+chrom+'_graph_cut_input.npy',allow_pickle=True).item()
     depth_mean = data['depth_mean'].astype(np.double)
     loss_re = data['e0'].astype(np.double)
-    print(chrom,depth_mean,loss_re)
 
     print('Run Graph-Cut %s (%s)...' % (chrom, os.getpid()))
     start = time.time()
