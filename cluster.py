@@ -227,9 +227,12 @@ def assembly(path,depth_mean):
                     os.system('wtpoa-cns -t 8 -i ' + output_prefix + '.sup.wtdbg.ctg.lay.gz -fo ' + output_prefix + '.fa -q')
                     os.system('rm ' + output_prefix + '.sup.wtdbg* ')
  
-    os.system('rm ' + path + '*.fastq')
-    os.system('find ' + path + ' -name "*" -type f -size 0c | xargs -n 1 rm -rf')
+    #os.system('rm ' + path + '*.fastq')
+    #os.system('find ' + path + ' -name "*" -type f -size 0c | xargs -n 1 rm -rf')
+
+    os.system(f'find {path} -name "*.fastq" -delete')
+    os.system(f'find {path} -type f -size 0 -delete')
 
 
 
-
+    

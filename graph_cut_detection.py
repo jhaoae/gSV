@@ -20,7 +20,6 @@ def graph_cut_detection(loss, depth_mean,beta_para,gamma,amplify_para):
     e0 = loss[0]
 
     beta = depth_mean / beta_para
-    #gamma = 1
     amplify = np.ceil(depth_mean / amplify_para)
 
     # Create a graph
@@ -30,16 +29,14 @@ def graph_cut_detection(loss, depth_mean,beta_para,gamma,amplify_para):
     # Set smoothness costs
     smooth_cost = np.array([[0, 1],[1, 0]])
     hMRF.set_smooth_cost(smooth_cost)
-
+    
+    
     # Set neighbors
     AdjMatrix = readgetAdj2(len(e0))
-    #print('AdjMartix',AdjMatrix)
-    #print(AdjMatrix.tocoo().row,AdjMatrix.tocoo().col,amplify * AdjMatrix.data)
-    hMRF.set_all_neighbors(AdjMatrix.tocoo().row,AdjMatrix.tocoo().col,amplify * AdjMatrix.data)
+    hMRF.set_all_neighbors(AdjMatrix.tocoo().row,AdjMatrix.tocoo().col,gamma*amplify * AdjMatrix.data)
 
     # Set data costs
-    #print(np.column_stack((e0,np.ones(len(e0))*beta)))
-    data_cost = (1/gamma)*np.column_stack((e0,np.ones(len(e0))*beta)).astype(np.int32)
+    data_cost = np.column_stack((e0,np.ones(len(e0))*beta)).astype(np.int32)
     hMRF.set_data_cost(data_cost)
     
     # expansion
@@ -47,7 +44,6 @@ def graph_cut_detection(loss, depth_mean,beta_para,gamma,amplify_para):
 
 
     # Get the cut results
-    #print(hMRF.get_labels())
     label = hMRF.get_labels()
     S = np.reshape(np.where(label==1,1,0),len(e0))
 
