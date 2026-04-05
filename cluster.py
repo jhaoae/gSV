@@ -190,7 +190,7 @@ def bam2fa(Start, End, chro, path, bam, read_set, name):
         if r.query_name in read_set:
             outfile.write(r) 
     outfile.close()
-    os.system('samtools bam2fq ' +path + 'out.bam > ' + path + name + '.fastq')
+    os.system('samtools bam2fq ' +path + 'out.bam > ' + path + name + '.fastq 2>/dev/null')
     os.system('rm ' + path + 'out.bam')
 
 def bam2fa_withoutcluster(Start, End, chro, path, bam, name):
@@ -199,7 +199,7 @@ def bam2fa_withoutcluster(Start, End, chro, path, bam, name):
     for r in reads:
         outfile.write(r)
     outfile.close()
-    os.system('samtools bam2fq ' +path + 'out.bam > ' + path + name + '.fastq')
+    os.system('samtools bam2fq ' +path + 'out.bam > ' + path + name + '.fastq 2>/dev/null')
     os.system('rm ' + path + 'out.bam')
 
 def assembly(path,depth_mean):
