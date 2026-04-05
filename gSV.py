@@ -26,8 +26,8 @@ def parse_arguments(arguments = sys.argv[1:]):
     encoding_params.add_argument('--min_sig_len', dest="min_signature_length", type=int, default=10, help='Minimum length for signature recording during encoding step (default: %(default)s)')
     
     graphcut_params = parser.add_argument_group("Parameters related to detection (graphcut) step")
-    graphcut_params.add_argument('--beta', dest="beta", type=int, default=5, help='Graphcut-related parameter beta (default: %(default)s)')
-    graphcut_params.add_argument('--gamma', dest="gamma", type=int, default=1, help='Graphcut-related parameter gamma (default: %(default)s)')
+    graphcut_params.add_argument('--beta', dest="beta", type=float, default=0.2, help='Graphcut-related parameter beta (default: %(default)s)')
+    graphcut_params.add_argument('--gamma', dest="gamma", type=float, default=1, help='Graphcut-related parameter gamma (default: %(default)s)')
     graphcut_params.add_argument('--amplify', dest="amplify", type=int, default=7, help='Graphcut-related parameters amplify (default: %(default)s)')
     graphcut_params.add_argument('--combine_distance', dest="combine_distance", type=int, default=500, help='Threshold for merging candidate regions detected by graphcut (default: %(default)s bps)')
     
