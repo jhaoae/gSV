@@ -19,7 +19,7 @@ def readgetAdj2(sizeData):
 def graph_cut_detection(loss, depth_mean,beta_para,gamma,amplify_para):
     e0 = loss[0]
 
-    beta = depth_mean / beta_para
+    beta = depth_mean* beta_para
     amplify = np.ceil(depth_mean / amplify_para)
 
     # Create a graph
