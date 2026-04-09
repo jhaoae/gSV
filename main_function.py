@@ -507,7 +507,7 @@ def summarize(ref_path, out_path, min_SV_len):
             ref.write('>'+SV[0]+'_'+SV[1]+'_ref\n'+ref_seq+'\n')
             ref.close()
 
-            os.system('minimap2 -a -k 9 --secondary=no ' + vcf_path+SV[0]+'_'+SV[1]+'_ref.fa '+vcf_path+SV[0]+'_'+SV[1]+'.fa > '+vcf_path+SV[0]+'_'+SV[1]+'.sam')
+            os.system('minimap2 -a -k 9 --secondary=no ' + vcf_path+SV[0]+'_'+SV[1]+'_ref.fa '+vcf_path+SV[0]+'_'+SV[1]+'.fa > '+vcf_path+SV[0]+'_'+SV[1]+'.sam 2>/dev/null')
             os.system('rm '+ vcf_path+SV[0]+'_'+SV[1]+'*.fa')
             with pysam.AlignmentFile(vcf_path+SV[0]+'_'+SV[1]+'.sam','r') as sam:
                 for r in sam:
