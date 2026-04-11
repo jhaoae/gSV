@@ -223,7 +223,7 @@ def assembly(path,depth_mean):
 
             if os.path.getsize(path + c.split('/')[-1][:-6] + '.fa')==0:
                 if int(name[2])-int(name[1]) >= 100:
-                    os.system('wtdbg2  -k 2 -p 19 -X '+depth+' -R -s -t 8  -i ' + path + c + ' -fo' + output_prefix + '.sup.wtdbg -q')
+                    os.system('wtdbg2  -k 2 -p 19 -X '+depth+' -R -t 8  -i ' + path + c + ' -fo' + output_prefix + '.sup.wtdbg -q')
                     os.system('wtpoa-cns -t 8 -i ' + output_prefix + '.sup.wtdbg.ctg.lay.gz -fo ' + output_prefix + '.fa -q')
                     os.system('rm ' + output_prefix + '.sup.wtdbg* ')
  
