@@ -279,7 +279,7 @@ def exactmatch(path, ref, chrom, mempath, memlen, min_SV_len):
             ref_start = max(int(SV_start) - max(3000,int(SV_end)-int(SV_start)),0)
             ref_end = min(int(SV_end) + max(3000,int(SV_end)-int(SV_start)),refL)
 
-            ref_copmem = open(path+SV_start+'_'+str(ref_start)+'_ref.fa','a')
+            ref_copmem = open(path+SV_start+'_'+str(ref_start)+'_ref.fa','w')
             ref_seq = ref.fetch(chro, ref_start, ref_end)
             ref_copmem.write('>'+chro+'\n'+ref_seq+'\n')
             ref_copmem.close()
