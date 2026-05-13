@@ -128,6 +128,8 @@ def detect(chrom, bam_path, ref_path, out_path, complex_mode, pos_range, L, supp
     vcf_file.write("##INFO=<ID=END,Number=1,Type=Integer,Description=\"End position of the structural variant described in this record\">\n")
     vcf_file.write("##INFO=<ID=SVTYPE,Number=1,Type=String,Description=\"Type of structural variant\">\n")
     vcf_file.write("##INFO=<ID=SVLEN,Number=.,Type=Integer,Description=\"Difference in length between REF and ALT alleles\">\n")
+    vcf_file.write("##INFO=<ID=ASM_SUPPORT,Number=1,Type=Integer,""Description=\"Number of reads used for local assembly of the SV haplotype cluster\">\n")
+    vcf_file.write("##INFO=<ID=SUPPORT,Number=1,Type=Integer,Description=\"Number of reads supporting the detected structural variant\">\n")
     vcf_file.write("##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">\n")
 
     chromosome = ref_file.references
@@ -342,7 +344,11 @@ def detect(chrom, bam_path, ref_path, out_path, complex_mode, pos_range, L, supp
                                     break
                             SV_start = SV_end
                     if abs(SV_length) >= min_SV_len:
-                        body_vec = [SV_chrom, str(SV_start), "SV" + str(ID), ref_seq, ctg_seq,".", "PASS", "END=" +str(SV_end)+ ";SVTYPE="+SV_type+";SVLEN="+str(SV_length), "GT", GT]
+                        info_field = ("END=" + str(SV_end) +
+                                      ";SVTYPE=" + SV_type +
+                                      ";SVLEN=" + str(SV_length) +
+                                      ";SUPPORT=" + str(SV_support))
+                        body_vec = [SV_chrom,str(SV_start),"SV" + str(ID),ref_seq,ctg_seq,".","PASS",info_field,"GT",GT]
                         vcf_file.write("\t".join(body_vec) + "\n")
                         ID += 1
             else:
@@ -363,33 +369,30 @@ def detect(chrom, bam_path, ref_path, out_path, complex_mode, pos_range, L, supp
         if class2:
             if len(class1)>5 and len(class2)>5:
                 if len(class1)/len(class2) >2:
-                    name1 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-1'
+                    name1 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-1' + str(len(class1))
                     bam2fa(interval_start, interval_end, chrom, path_fa, bam_file, class1, name1)
                 elif len(class2)/len(class1) >2:
-                    name2 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-2'
+                    name2 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-2' + str(len(class2))
                     bam2fa(interval_start, interval_end, chrom, path_fa, bam_file, class2, name2)
                 else:
-                    name1 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-1-genotype'
-                    name2 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-2-genotype'
+                    name1 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-1'+ str(len(class1)) + '-genotype'
+                    name2 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-2'+ str(len(class2)) + '-genotype'
                     bam2fa(interval_start, interval_end, chrom, path_fa, bam_file, class1, name1)
                     bam2fa(interval_start, interval_end, chrom, path_fa, bam_file, class2, name2)
             elif len(class1)>5:
-                name1 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-1'
+                name1 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-1' + str(len(class1))
                 bam2fa(interval_start, interval_end, chrom, path_fa, bam_file, class1, name1)
             elif len(class2)>5:
-                name2 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-2'
+                name2 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-2' + str(len(class2))
                 bam2fa(interval_start, interval_end, chrom, path_fa, bam_file, class2, name2)
         else:
-            name1 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-1'
+            name1 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-1' + str(len(class1))
             bam2fa(interval_start, interval_end, chrom, path_fa, bam_file, class1, name1)
         
     data = np.load(out_path+'/'+chrom+'_graph_cut_input.npy',allow_pickle=True).item()
     depth_mean = data['depth_mean'].astype(np.double)
-
     assembly(path_fa,depth_mean)
-    
     split_fa(path_fa)
-     
 
     exactmatch(path_fa, ref_file, chrom, mempath, memlen, min_SV_len)
         
@@ -461,24 +464,21 @@ def summarize(ref_path, out_path, min_SV_len):
         lines = vcf_ori.readlines()
 
     output = []
+    header = []
     overlap = []
     ID = 1
     for i in range(len(lines)):
         if lines[i].startswith('#'):
-            output.append(lines[i])
+            header.append(lines[i])
             continue
         if i in overlap:
             continue
-
-        if len(output) == 0:
-            output.append(lines[i])
             
         SV = lines[i].split('\t')
         SV_detail = SV[7].split(';')
         SV_len = int(SV_detail[2].split('=')[1])
 
-
-        for j in range(i,len(lines)):
+        for j in range(i+1,len(lines)):
             SV_next = lines[j].split('\t')
             SV_next_detail = SV_next[7].split(';')
             SV_next_len = int(SV_next_detail[2].split('=')[1])
@@ -519,14 +519,20 @@ def summarize(ref_path, out_path, min_SV_len):
                         if maplen/SV_len > 0.85 and abs(ref_start+r.reference_start-int(SV[1])) < 500:
                             SV[1] = str(ref_start+r.reference_start)
                             SV[4] = '<DUP>'
-                            SV[7] = 'END=' +str(int(SV[1])+SV_len)+';SVTYPE=DUP;SVLEN='+str(SV_len)
+                            info_extra = ''
+                            if len(SV_detail) > 3:
+                                info_extra = ';' + ';'.join(SV_detail[3:])
+                            SV[7] = 'END=' +str(int(SV[1])+SV_len)+';SVTYPE=DUP;SVLEN='+str(SV_len)+info_extra
             os.system('rm '+vcf_path+'*.sam')
         if abs(SV_len) < min_SV_len:
             continue
         
         output.append(SV[0]+'\t'+SV[1]+'\tSV'+str(ID)+'\t'+SV[3]+'\t'+SV[4]+'\t'+SV[5]+'\t'+SV[6]+'\t'+SV[7]+'\t'+SV[8]+'\t'+SV[9])
         ID += 1
+
+    output = sorted(output,key=lambda x: (x.split('\t')[0],int(x.split('\t')[1])))
     with open(out_path+"/gSV.vcf", "w+") as vcf_final:
+        vcf_final.writelines(header)
         vcf_final.writelines(output)
 
     vcf_final.close()

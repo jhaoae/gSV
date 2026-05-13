@@ -133,7 +133,7 @@ def modify_exactmatch(f, distance):
 
 
 
-def final_results(forward, len_forward, reverse, len_reverse, L, start, end, ref, ctg, genotype, ref_start): 
+def final_results(forward, len_forward, reverse, len_reverse, L, start, end, ref, ctg, genotype, ref_start, SV_support): 
     
     forward_start = 1000000
     reverse_start = 1000000
@@ -169,7 +169,7 @@ def final_results(forward, len_forward, reverse, len_reverse, L, start, end, ref
         SV_end = r[i][4]+ref_start
         if check_overlap(start, end, SV_start, SV_end)>0:
             seq = ref.fetch(r[0][0],SV_start,SV_start+1)
-            SV.append(['INV',r[0][0], SV_start, SV_end, r[i][3], seq, '<INV>',genotype, r[i][5]+read_start])
+            SV.append(['INV',r[0][0], SV_start, SV_end, r[i][3], seq, '<INV>',genotype, r[i][5]+read_start, SV_support])
     f.extend(r)
     f.sort(key=lambda x: x[2])
 
@@ -196,24 +196,24 @@ def final_results(forward, len_forward, reverse, len_reverse, L, start, end, ref
             if (overlap1>0 and overlap2<0) or (overlap1>0 and overlap2>overlap1):
                 ref_seq = ref.fetch(f[0][0],SV_start_1,SV_end_1)
                 ctg_seq = ref_seq[0]
-                SV.append(['DEL', f[0][0], SV_start_1, SV_end_1, -(D-d + 1), ref_seq, ctg_seq, genotype, f[i][5]+read_start])
+                SV.append(['DEL', f[0][0], SV_start_1, SV_end_1, -(D-d + 1), ref_seq, ctg_seq, genotype, f[i][5]+read_start, SV_support])
             elif (overlap2>0 and overlap1<0) or (overlap2>0 and overlap1>overlap2):
                 ref_seq = ref.fetch(f[0][0],SV_start_2,SV_end_2)
                 ctg_seq = ref_seq[0]#ctg.fetch(ctg.references[0],f[i+1][2]-1,f[i+1][2])
-                SV.append(['DEL', f[0][0], SV_start_2, SV_end_2, -(D-d + 1), ref_seq, ctg_seq, genotype, f[i+1][2]-(D-d+1)+read_start])
+                SV.append(['DEL', f[0][0], SV_start_2, SV_end_2, -(D-d + 1), ref_seq, ctg_seq, genotype, f[i+1][2]-(D-d+1)+read_start, SV_support])
         elif D_L >= -10 and d >=50 and d-D >=50:
             SV_start = f[i][4] + ref_start
             SV_end = SV_start + 1
             if check_overlap(start, end, SV_start, SV_end)>0:
                 ref_seq = ref.fetch(f[0][0],SV_start,SV_start+1)
                 ctg_seq = ctg.fetch(ctg.references[0],f[i][5],f[i+1][2])
-                SV.append(['INS', f[0][0], SV_start, SV_end, d - D, ref_seq, ctg_seq, genotype, f[i][5]+read_start])
+                SV.append(['INS', f[0][0], SV_start, SV_end, d - D, ref_seq, ctg_seq, genotype, f[i][5]+read_start, SV_support])
         elif D_L <= -50 and D_R >= -50:
             SV_start = f[i+1][1] + ref_start
             SV_end = max_R + ref_start
             if check_overlap(start, end, SV_start, SV_end)>0:
                 seq = ref.fetch(f[0][0],SV_start,SV_start+1)
-                SV.append(['DUP', f[0][0], SV_start, SV_end, SV_end-SV_start,seq,'tandemDUP', genotype, f[i][5]+read_start])
+                SV.append(['DUP', f[0][0], SV_start, SV_end, SV_end-SV_start,seq,'tandemDUP', genotype, f[i][5]+read_start, SV_support])
         elif D_R < -50:
             # disperedDUP
             SV_start = max_R
@@ -222,7 +222,7 @@ def final_results(forward, len_forward, reverse, len_reverse, L, start, end, ref
             disdup_end = SV_start + f[i+1][3]
             if check_overlap(start, end, SV_start, SV_end)>0:
                 seq = ref.fetch(f[0][0], SV_start,SV_start+1)
-                SV.append(['INS', f[0][0], SV_start, SV_end, SV_end-SV_start,seq,'dispereDUP_'+str(disdup_start)+'_'+str(disdup_end), genotype, f[i+1][2]+read_start])
+                SV.append(['INS', f[0][0], SV_start, SV_end, SV_end-SV_start,seq,'dispereDUP_'+str(disdup_start)+'_'+str(disdup_end), genotype, f[i+1][2]+read_start, SV_support])
 
 
     
@@ -251,6 +251,8 @@ def exactmatch(path, ref, chrom, mempath, memlen, min_SV_len):
     vcf_file.write("##INFO=<ID=END,Number=1,Type=Integer,Description=\"End position of the structural variant described in this record\">\n")
     vcf_file.write("##INFO=<ID=SVTYPE,Number=1,Type=String,Description=\"Type of structural variant\">\n")
     vcf_file.write("##INFO=<ID=SVLEN,Number=.,Type=Integer,Description=\"Difference in length between REF and ALT alleles\">\n")
+    vcf_file.write("##INFO=<ID=ASM_SUPPORT,Number=1,Type=Integer,""Description=\"Number of reads used for local assembly of the SV haplotype cluster\">\n")
+    vcf_file.write("##INFO=<ID=SUPPORT,Number=1,Type=Integer,Description=\"Number of reads supporting the detected structural variant\">\n")
     vcf_file.write("##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">\n")
     
     chromosome = ref.references
@@ -276,6 +278,7 @@ def exactmatch(path, ref, chrom, mempath, memlen, min_SV_len):
             refL = ref.get_reference_length(chro)
             SV_start = SV_name.split('-')[1]
             SV_end = SV_name.split('-')[2]
+            SV_support = SV_name.split('-')[3]
             ref_start = max(int(SV_start) - max(3000,int(SV_end)-int(SV_start)),0)
             ref_end = min(int(SV_end) + max(3000,int(SV_end)-int(SV_start)),refL)
 
@@ -298,7 +301,7 @@ def exactmatch(path, ref, chrom, mempath, memlen, min_SV_len):
                 reverse, len_reverse = txt2list(file_split[i+1])
                 if len(forward)==0 and len(reverse)==0:
                     continue
-                SV = final_results(forward, len_forward, reverse, len_reverse, L, start, end, ref, ctg, genotype,ref_start)
+                SV = final_results(forward, len_forward, reverse, len_reverse, L, start, end, ref, ctg, genotype, ref_start, SV_support)
                 if SV:
                     SV_seen = []
                     SV_complex = []
@@ -320,7 +323,7 @@ def exactmatch(path, ref, chrom, mempath, memlen, min_SV_len):
                                                             complex_ref = SV[i][5]
                                                         SV_complex[k][3] =  max(SV[i][3],SV_complex[k][3])
                                                         SV_complex[k][4] =  SV_complex[k][3]-SV_complex[k][2]
-                                                        SV_complex[k][8].append([SV[i][0],SV[i][8],SV[i][2],SV[i][3],SV[i][4],SV[i][6]])
+                                                        SV_complex[k][8].append([SV[i][0],SV[i][8],SV[i][2],SV[i][3],SV[i][4],SV[i][6],SV[i][9]])
                                                         flag = 1
                                                         break
                                             if flag == 0:
@@ -334,7 +337,7 @@ def exactmatch(path, ref, chrom, mempath, memlen, min_SV_len):
                                                 sv_seen_type = SV_seen[j][0]
                                                 sv_type = SV[i][0]
                                                 
-                                                SV_complex.append(['COMPLEX',SV[i][1], complex_start, complex_end, complex_end - complex_start,complex_ref,'<COM>', genotype,[[sv_seen_type,SV_seen[j][8],SV_seen[j][2],SV_seen[j][3],SV_seen[j][4],SV_seen[j][6]],[sv_type,SV[i][8],SV[i][2],SV[i][3],SV[i][4],SV[i][6]]]])
+                                                SV_complex.append(['COMPLEX',SV[i][1], complex_start, complex_end, complex_end - complex_start,complex_ref,'<COM>', genotype,[[sv_seen_type,SV_seen[j][8],SV_seen[j][2],SV_seen[j][3],SV_seen[j][4],SV_seen[j][6],SV_seen[j][9]],[sv_type,SV[i][8],SV[i][2],SV[i][3],SV[i][4],SV[i][6],SV[i][9]]]])
                                             else:
                                                 break
                             SV_seen.append(SV[i])
@@ -353,12 +356,11 @@ def exactmatch(path, ref, chrom, mempath, memlen, min_SV_len):
                         continue
         
         SV_final.append(SV_sort[i])
-
     for i in range(len(SV_final)):
         if 'DUP' in SV_final[i][6]:
-            body_vec = [SV_final[i][1], str(SV_final[i][2]), "SV" + str(ID),SV_final[i][5], '<'+SV_final[i][0]+'>',".", "PASS", "END=" +str(SV_final[i][3])+ ";SVTYPE="+SV_final[i][6]+";SVLEN="+str(SV_final[i][4]), "GT", SV_final[i][7]]
+            body_vec = [SV_final[i][1], str(SV_final[i][2]), "SV" + str(ID),SV_final[i][5], '<'+SV_final[i][0]+'>',".", "PASS", "END=" +str(SV_final[i][3])+ ";SVTYPE="+SV_final[i][6]+";SVLEN="+str(SV_final[i][4])+";ASM_SUPPORT="+SV_final[i][9], "GT", SV_final[i][7]]
         else:
-            body_vec = [SV_final[i][1], str(SV_final[i][2]), "SV" + str(ID),SV_final[i][5], SV_final[i][6],".", "PASS", "END=" +str(SV_final[i][3])+ ";SVTYPE="+SV_final[i][0]+";SVLEN="+str(SV_final[i][4]), "GT", SV_final[i][7]]
+            body_vec = [SV_final[i][1], str(SV_final[i][2]), "SV" + str(ID),SV_final[i][5], SV_final[i][6],".", "PASS", "END=" +str(SV_final[i][3])+ ";SVTYPE="+SV_final[i][0]+";SVLEN="+str(SV_final[i][4])+";ASM_SUPPORT="+SV_final[i][9], "GT", SV_final[i][7]]
         vcf_file.write("\t".join(body_vec) + "\n")
         ID += 1
     vcf_file.close()
@@ -373,6 +375,9 @@ def exactmatch(path, ref, chrom, mempath, memlen, min_SV_len):
     vcf_com.write("##INFO=<ID=END,Number=1,Type=Integer,Description=\"End position of the structural variant described in this record\">\n")
     vcf_com.write("##INFO=<ID=SVTYPE,Number=1,Type=String,Description=\"Type of structural variant\">\n")
     vcf_com.write("##INFO=<ID=SVLEN,Number=.,Type=Integer,Description=\"Difference in length between REF and ALT alleles\">\n")
+    vcf_com.write("##INFO=<ID=SUPPORT,Number=1,Type=Integer,Description=\"Number of supporting reads\">\n")
+    vcf_com.write("##INFO=<ID=ASM_SUPPORT,Number=1,Type=Integer,""Description=\"Number of reads used for local assembly of the SV haplotype cluster\">\n")
+    vcf_com.write("##INFO=<ID=SUPPORT,Number=1,Type=Integer,Description=\"Number of reads supporting the detected structural variant\">\n")
     vcf_com.write("##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">\n")
 
     chromosome = ref.references
@@ -405,15 +410,16 @@ def exactmatch(path, ref, chrom, mempath, memlen, min_SV_len):
     for i in range(len(SV_complex_final)):
         detail = sorted(SV_complex_final[i][8], key=lambda x: x[1])
         subtype_list = []
+        support = 0
         for item in detail:
             if 'dispereDUP' in item[5]:
                 subtype = item[0]+':'+str(item[2])+'-'+str(item[3])+'-'+str(item[4])+'('+item[5]+')'
             else:
                 subtype = item[0]+':'+str(item[2])+'-'+str(item[3])+'-'+str(item[4])
             subtype_list.append(subtype)
-
+            support = max(support,int(item[6]))
         subtype = '+'.join(subtype_list)
-        body_vec = [SV_complex_final[i][1], str(SV_complex_final[i][2]), "SV" + str(ID),SV_complex_final[i][5], SV_complex_final[i][6],".", "PASS", "END=" +str(SV_complex_final[i][3])+ ";SVTYPE="+SV_complex_final[i][0]+":"+subtype+";SVLEN="+str(SV_complex_final[i][4]), "GT", SV_complex_final[i][7]]
+        body_vec = [SV_complex_final[i][1], str(SV_complex_final[i][2]), "SV" + str(ID),SV_complex_final[i][5], SV_complex_final[i][6],".", "PASS", "END=" +str(SV_complex_final[i][3])+ ";SVTYPE="+SV_complex_final[i][0]+":"+subtype+";SVLEN="+str(SV_complex_final[i][4])+";ASM_SUPPORT="+str(support), "GT", SV_complex_final[i][7]]
         vcf_com.write("\t".join(body_vec) + "\n")
         ID += 1
     vcf_com.close()
