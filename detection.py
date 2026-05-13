@@ -278,7 +278,7 @@ def exactmatch(path, ref, chrom, mempath, memlen, min_SV_len):
             refL = ref.get_reference_length(chro)
             SV_start = SV_name.split('-')[1]
             SV_end = SV_name.split('-')[2]
-            SV_support = SV_name.split('-')[3]
+            SV_support = SV_name.split('-')[4]
             ref_start = max(int(SV_start) - max(3000,int(SV_end)-int(SV_start)),0)
             ref_end = min(int(SV_end) + max(3000,int(SV_end)-int(SV_start)),refL)
 

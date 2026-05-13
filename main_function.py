@@ -367,27 +367,28 @@ def detect(chrom, bam_path, ref_path, out_path, complex_mode, pos_range, L, supp
         class1, class2 = clustering(reads, interval_start-100, length, cluster_similarity)
              
         if class2:
-            if len(class1)>5 and len(class2)>5:
+            if len(class1)>support_read and len(class2)>support_read:
                 if len(class1)/len(class2) >2:
-                    name1 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-1' + str(len(class1))
+                    name1 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-1-'
                     bam2fa(interval_start, interval_end, chrom, path_fa, bam_file, class1, name1)
                 elif len(class2)/len(class1) >2:
-                    name2 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-2' + str(len(class2))
+                    name2 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-2-'
                     bam2fa(interval_start, interval_end, chrom, path_fa, bam_file, class2, name2)
                 else:
-                    name1 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-1'+ str(len(class1)) + '-genotype'
-                    name2 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-2'+ str(len(class2)) + '-genotype'
+                    name1 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-1genotype-'
+                    name2 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-2genotype-'
                     bam2fa(interval_start, interval_end, chrom, path_fa, bam_file, class1, name1)
                     bam2fa(interval_start, interval_end, chrom, path_fa, bam_file, class2, name2)
-            elif len(class1)>5:
-                name1 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-1' + str(len(class1))
+            elif len(class1)>support_read:
+                name1 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-1-'
                 bam2fa(interval_start, interval_end, chrom, path_fa, bam_file, class1, name1)
-            elif len(class2)>5:
-                name2 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-2' + str(len(class2))
+            elif len(class2)>support_read:
+                name2 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-2-'
                 bam2fa(interval_start, interval_end, chrom, path_fa, bam_file, class2, name2)
         else:
-            name1 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-1' + str(len(class1))
-            bam2fa(interval_start, interval_end, chrom, path_fa, bam_file, class1, name1)
+            if len(class1)>support_read:
+                name1 = chrom + '-' + str(interval_start) + '-' + str(interval_end) + '-1-'
+                bam2fa(interval_start, interval_end, chrom, path_fa, bam_file, class1, name1)
         
     data = np.load(out_path+'/'+chrom+'_graph_cut_input.npy',allow_pickle=True).item()
     depth_mean = data['depth_mean'].astype(np.double)

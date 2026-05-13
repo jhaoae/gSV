@@ -186,11 +186,13 @@ def clustering(reads, ref_pos, length, min_ratio):
 def bam2fa(Start, End, chro, path, bam, read_set, name):
     outfile = pysam.AlignmentFile(path + 'out.bam','wb',template=bam)
     reads = bam.fetch(chro, Start, End)
+    count=0
     for r in reads:
         if r.query_name in read_set:
+            count += 1
             outfile.write(r) 
     outfile.close()
-    os.system('samtools bam2fq ' +path + 'out.bam > ' + path + name + '.fastq 2>/dev/null')
+    os.system('samtools bam2fq ' +path + 'out.bam > ' + path + name +str(count)+ '.fastq 2>/dev/null')
     os.system('rm ' + path + 'out.bam')
 
 def bam2fa_withoutcluster(Start, End, chro, path, bam, name):
